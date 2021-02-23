@@ -1,8 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -45,6 +41,24 @@ public class VideoServer {
 
     private void startServer() throws IOException {
         //some statements are missing from here
+        serverSocket = new ServerSocket(6666);
+        serverSocket.setSoTimeout(20000);
+
+        clientSocket = serverSocket.accept();
+
+        out = new PrintWriter(
+                new BufferedWriter(
+                        new OutputStreamWriter(
+                                new DataOutputStream(clientSocket.getOutputStream())
+                        )
+                )
+        );
+
+        in = new BufferedReader(
+                new InputStreamReader(
+                        new DataInputStream(clientSocket.getInputStream())
+                )
+        );
 
         //we only make it this far if the code above doesn't throw an exception
         welcomeClient();

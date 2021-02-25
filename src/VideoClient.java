@@ -44,7 +44,7 @@ public class VideoClient {
     public String sendCommand(String command) throws Exception {
         if (writer != null) {
             writer.println(command);
-
+            writer.flush();
             return readServerOutput();
         } else {
             return "Not connected.";
@@ -66,8 +66,6 @@ public class VideoClient {
             sb.append(line);
             sb.append('\n');
         }
-
-        logger.log(Level.INFO, "Server output reader");
 
         //remove trailing newline
         sb.deleteCharAt((sb.length() - 1));

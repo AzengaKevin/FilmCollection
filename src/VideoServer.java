@@ -41,21 +41,16 @@ public class VideoServer {
             System.err.format("Error while attempting to read from file: %s%n", e);
         }
 
-        videos.forEach(video -> System.out.println(video.getName()));
-
         engine = new VideoServerEngine(videos);
-
-        logger.log(Level.INFO, "Initialization doe...");
     }
 
     private void startServer() throws IOException {
         //some statements are missing from here
-        serverSocket = new ServerSocket(portNumber, 10);
-        //serverSocket.setSoTimeout(20000);
+        serverSocket = new ServerSocket(portNumber);
+
+        System.out.printf("Server started on port %d ...", serverSocket.getLocalPort());
 
         clientSocket = serverSocket.accept();
-
-        logger.log(Level.INFO, "Client Accepted");
 
         out = new PrintWriter(
                 new BufferedWriter(
@@ -127,8 +122,6 @@ public class VideoServer {
         out.println(s);
         out.println(ServerUtils.getEOM()); //The client won't know it has reached the end of our message without this
         out.flush();
-
-        logger.log(Level.INFO, "Message sent");
     }
 
     public static void main(String[] args) throws IOException {

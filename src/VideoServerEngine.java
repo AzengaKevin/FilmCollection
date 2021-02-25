@@ -217,8 +217,7 @@ public class VideoServerEngine {
         List<String> genres = new ArrayList<>();
 
         //TODO WRITE THE SEARCH CODE
-        for (Video video :
-                videos) {
+        for (Video video : videos) {
             Arrays.stream(video.getGenre().split(" ")).forEach(genre -> {
                 if (!genres.contains(genre.trim())) {
                     genres.add(genre.trim());
@@ -240,10 +239,26 @@ public class VideoServerEngine {
     private String buildResult(List<Video> searchResults) {
         if (searchResults.size() == 0) return String.format("no results found for '%s'%n", currentCommand);
 
+        String[] words = currentCommand.split("\\s+", 2);
+
+        //make both strings lower case and trim any excess whitespace to make comparisons easier
+        String instruction = words[0].toLowerCase().trim();
+        String argument = words[1].toLowerCase().trim();
+
         StringBuilder sb = new StringBuilder();
+
+        if (!(instruction.equalsIgnoreCase("show") && argument.equalsIgnoreCase("help"))) {
+            sb.append(String.format("--- Results for '%s' ---%n", currentCommand));
+        }
+
         for (Video v : searchResults) {
             sb.append(String.format("%s%n%n", v));
         }
+
+        if (!(instruction.equalsIgnoreCase("show") && argument.equalsIgnoreCase("help"))) {
+            sb.append("--- End of Results ---" + System.lineSeparator());
+        }
+
         sb.deleteCharAt(sb.length() - 1); //delete the last newline
         return sb.toString();
     }

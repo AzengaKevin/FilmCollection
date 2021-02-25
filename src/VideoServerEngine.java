@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -199,7 +200,8 @@ public class VideoServerEngine {
                 return getAvailableCommands();
             case "all":
                 return getAll();
-            //case "genres":		return getGenres();
+            case "genres":
+                return getGenres();
 
             default:
                 return "I don't know how to show that!";
@@ -211,9 +213,18 @@ public class VideoServerEngine {
     }
 
     private String getGenres() {
-        List<String> genres = new ArrayList<String>();
+
+        List<String> genres = new ArrayList<>();
 
         //TODO WRITE THE SEARCH CODE
+        for (Video video :
+                videos) {
+            Arrays.stream(video.getGenre().split(" ")).forEach(genre -> {
+                if (!genres.contains(genre.trim())) {
+                    genres.add(genre.trim());
+                }
+            });
+        }
 
         Collections.sort(genres);
 

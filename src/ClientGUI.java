@@ -5,6 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -13,6 +16,9 @@ import javax.swing.text.DefaultCaret;
 
 
 public class ClientGUI {
+
+    private static final Logger logger = Logger.getLogger(ClientGUI.class.getSimpleName());
+
     private static final String connectButtonText = "Connect";
     private static final String disconnectButtonText = "Disconnect";
     private static final String enterCommandButtonText = "Enter command";
@@ -67,6 +73,7 @@ public class ClientGUI {
 
         frame.setSize(800, 520);
         frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //stop the command button being enabled when there is no text in the TextField
@@ -114,12 +121,40 @@ public class ClientGUI {
             if (!connected) {
                 //connect
                 try {
-                    //hardcoded to connect to localhost. change this line if you want to connect to a remote host
-                    String msg = client.connect("localhost");
-                    append(msg);
-                    connectButton.setText(disconnectButtonText);
-                    //change state
-                    connected = !connected;
+
+
+                    SwingWorker<String, Void> worker = new SwingWorker<>() {
+                        @Override
+                        protected String doInBackground() throws Exception {
+                            logger.log(Level.INFO, "Initiating the connection");
+                            return client.connect("localhost");
+                        }
+
+                        @Override
+                        protected void done() {
+                            super.done();
+
+                            try {
+
+                                logger.log(Level.INFO, "Connection established");
+                                append(get());
+
+                                connectButton.setText(disconnectButtonText);
+                                //change state
+                                connected = !connected;
+
+                            } catch (InterruptedException | ExecutionException interruptedException) {
+                                interruptedException.printStackTrace();
+                            }
+
+
+                        }
+                    };
+
+                    logger.log(Level.INFO, "Trying to connect to server...");
+
+                    worker.execute();
+
                 } catch (Exception e1) {
                     displayError(e1);
                 }

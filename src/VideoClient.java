@@ -1,61 +1,78 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class VideoClient {
-	private int port = 1983;
-	private Socket socket;
-	private PrintWriter writer;
-	private BufferedReader reader;
 
-	public String connect (String host) throws Exception {
-		//some statements are missing from here
+    private static final Logger logger = Logger.getLogger(VideoClient.class.getSimpleName());
+    private static final int PORT = 1983;
+    private Socket socket;
+    private PrintWriter writer;
+    private BufferedReader reader;
 
-		//FileServer sends a welcome message. return the message.
-		return readServerOutput();
-	}
+    private static final int DEFAULT_BUFFER_SIZE = 1024;
 
-	public void disconnect() throws Exception {
-		if (!socket.isClosed()) { //only attempt to close if it hasn't already been closed
-			reader.close();
-			writer.close();
-			socket.close();
-		}
-	}
+    public String connect(String host) throws Exception {
+        socket = new Socket(host, PORT);
 
-	/*
-	 * send a command to the server and return the response
-	 */
-	public String sendCommand(String command) throws Exception {
-	    if (writer != null) {
-			writer.println(command);
+        writer = new PrintWriter(
+                new BufferedWriter(
+                        new OutputStreamWriter(
+                                new DataOutputStream(socket.getOutputStream())
+                        ), DEFAULT_BUFFER_SIZE
+                )
+        );
 
-			return readServerOutput();
-		} else {
-	    	return "Not connected.";
-		}
-	}
+        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-	/*
-	 * read the messages sent from the server
-	 */
-	private String readServerOutput() throws Exception {
-		StringBuffer sb = new StringBuffer();
-		String line;
+        return readServerOutput();
+    }
 
-		while ((line = reader.readLine()) != null) { //receiving a null here means the server has closed the connection
-			if(line.equals(ServerUtils.getEOM())) { //EOM (End of Message) is defined in the FileServer class
-				break;
-			}
-			sb.append(line);
-			sb.append('\n');
-		}
-		//remove trailing newline
-		sb.deleteCharAt((sb.length()-1));
-		return sb.toString();
-	}
+    public void disconnect() throws Exception {
+        if (!socket.isClosed()) { //only attempt to close if it hasn't already been closed
+            reader.close();
+            writer.close();
+            socket.close();
+        }
+    }
+
+    /*
+     * send a command to the server and return the response
+     */
+    public String sendCommand(String command) throws Exception {
+        if (writer != null) {
+            writer.println(command);
+
+            return readServerOutput();
+        } else {
+            return "Not connected.";
+        }
+    }
+
+    /*
+     * read the messages sent from the server
+     */
+    private String readServerOutput() throws Exception {
+
+        StringBuffer sb = new StringBuffer();
+        String line;
+
+        while ((line = reader.readLine()) != null) { //receiving a null here means the server has closed the connection
+            if (line.equals(ServerUtils.getEOM())) { //EOM (End of Message) is defined in the FileServer class
+                break;
+            }
+            sb.append(line);
+            sb.append('\n');
+        }
+
+        logger.log(Level.INFO, "Server output reader");
+
+        //remove trailing newline
+        sb.deleteCharAt((sb.length() - 1));
+        return sb.toString();
+    }
 }
 
 
